@@ -1,116 +1,76 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title> — أحدث منشور @SPAeconomic </title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تغريدات @SPAeconomic مع خلفية مخصصة</title>
   <style>
-    :root{ --fg:#fff; --muted:#cbd5e1; --accent:#7cc4ff }
-    *{box-sizing:border-box}
-    html,body{
-      height:100%; margin:0; overflow:hidden;
-      display:flex; align-items:center; justify-content:center;
-      background:#0a2a3a url('https://i.postimg.cc/hP8jsqwh/background.png') center/cover no-repeat fixed;
-      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
-      color:var(--fg);
+    /* تنسيق الحاوية الرئيسية */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #000; /* خلفية الصفحة الرئيسية، يمكن تغييرها */
     }
-    .wrap{ width:92%; max-width:720px; background: rgba(0,0,0,.55);
-           backdrop-filter: blur(10px) brightness(.9);
-           border-radius: 20px; padding: 22px; }
-    h1{margin:0 0 12px; text-align:center; font-size: clamp(18px, 3vmax, 34px);}
-    .card{ background: rgba(0,0,0,.35); border-radius: 14px; padding: 18px; min-height: 40vh;
-           display:flex; align-items:center; justify-content:center; }
-    .text{ font-size: clamp(18px, 2.5vmax, 30px); line-height: 1.6; white-space: pre-wrap; text-align: start; }
-    .meta{ margin-top: 10px; display:flex; justify-content:space-between; flex-wrap:wrap; color: var(--muted); font-size: 14px;}
-    .err{ color:#ff8f8f; text-align:center; }
-    a{ color:var(--accent); text-decoration:none; }
-    .small{ font-size: 13px; opacity: .85; }
+    
+    .twitter-container {
+      width: 100%; /* عرض كامل للشاشة */
+      max-width: 600px; /* حد أقصى للعرض على الشاشات الكبيرة */
+      height: 100vh; /* ارتفاع كامل للشاشة (Viewport Height) */
+      margin: 0 auto; /* توسيط */
+      overflow-y: auto; /* تمرير رأسي للتغريدات */
+      background: url('https://example.com/your-background.jpg') no-repeat center center fixed; /* رابط الخلفية المخصصة - غيّره هنا! */
+      background-size: cover; /* تغطية كاملة للخلفية */
+      border-radius: 0; /* بدون حواف مستديرة للشاشات الكاملة */
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3); /* ظل داخلي خفيف للعمق */
+      position: relative;
+    }
+    
+    /* تنسيق التغريدات داخل الـ Widget */
+    .twitter-timeline {
+      background: rgba(255, 255, 255, 0.9); /* خلفية شفافة قليلاً للتغريدات لتندمج مع الخلفية */
+      padding: 10px;
+      border-radius: 10px; /* حواف مستديرة للتغريدات */
+      margin: 10px; /* مسافة من الحواف */
+      backdrop-filter: blur(5px); /* تأثير ضبابي للشفافية (مدعوم في المتصفحات الحديثة) */
+    }
+    
+    /* إخفاء الشريط الأفقي إذا لزم */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>أحدث منشور من ‎@SPAeconomic</h1>
-    <div class="card">
-      <div id="content" class="text">يجري الجلب…</div>
-    </div>
-    <div class="meta">
-      <span id="time"></span>
-      <span class="small">تحديث تلقائي كل <span id="count">60</span> ثانية</span>
-    </div>
+  <!-- الحاوية الرئيسية للتغريدات -->
+  <div id="timeline" class="twitter-container">
+    <!-- رابط التغذية الرسمي لـ @SPAeconomic -->
+    <a class="twitter-timeline" 
+       data-height="100%" 
+       data-theme="light"  <!-- غيّر إلى "dark" إذا كانت الخلفية داكنة -->
+       data-chrome="noheader nofooter noborders transparent"  <!-- إزالة العناصر الإضافية لتصميم نظيف -->
+       href="https://twitter.com/SPAeconomic?ref_src=twsrc%5Etfw">Tweets by @SPAeconomic</a>
+    <!-- سكريبت X الرسمي لتحميل التغريدات -->
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
   </div>
-
+  
   <script>
-    const USERNAME = "@SPAeconomic";
-    const REFRESH_SECONDS = 60;
-    const contentEl = document.getElementById('content');
-    const timeEl = document.getElementById('time');
-    const countEl = document.getElementById('count');
-
-    const JSON_SOURCES = [
-      `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fnitter.net%2F${USERNAME}%2Frss`,
-      `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fnitter.fdn.fr%2F${USERNAME}%2Frss`,
-      `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fnitter.pufe.org%2F${USERNAME}%2Frss`
-    ];
-    const XML_FALLBACKS = [
-      `https://r.jina.ai/http://nitter.net/${USERNAME}/rss`,
-      `https://r.jina.ai/http://nitter.fdn.fr/${USERNAME}/rss`
-    ];
-
-    function escapeHtml(s){return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-    const pad=n=>n<10?'0'+n:n;
-    const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-
-    async function fetchJson(url){
-      const res = await fetch(url, {cache:'no-store'});
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      return res.json();
-    }
-    async function fetchText(url){
-      const res = await fetch(url, {cache:'no-store'});
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      return res.text();
-    }
-
-    async function loadLatest(){
-      contentEl.textContent = "يجري الجلب…";
-      for (const u of JSON_SOURCES){
-        try{
-          const data = await fetchJson(u);
-          if(data && data.items && data.items.length){
-            const it = data.items[0];
-            const txt = it.title || it.description || '';
-            const link = it.link || it.guid || '';
-            const pub = it.pubDate ? new Date(it.pubDate) : new Date();
-            contentEl.innerHTML = escapeHtml(txt) + `\n\n<a href="${link}" target="_blank" rel="noopener">فتح المنشور على X ↗</a>`;
-            timeEl.textContent = fmt(pub);
-            return;
-          }
-        }catch(e){ console.warn('JSON src failed', u, e); }
+    // تحريك تلقائي للتغريدات (Auto-Scroll)
+    setInterval(() => {
+      const timeline = document.getElementById('timeline');
+      if (timeline.scrollTop >= timeline.scrollHeight - timeline.clientHeight - 1) {
+        timeline.scrollTop = 0; // العودة إلى الأعلى عند الوصول للأسفل
+      } else {
+        timeline.scrollTop += 1; // تحريك ببطء (غيّر الرقم لتعديل السرعة: أكبر = أسرع)
       }
-      for (const u of XML_FALLBACKS){
-        try{
-          const xml = await fetchText(u);
-          const doc = new DOMParser().parseFromString(xml,'text/xml');
-          const item = doc.querySelector('item');
-          if(item){
-            const title = item.querySelector('title')?.textContent || '';
-            const link = item.querySelector('link')?.textContent || '';
-            const pub  = item.querySelector('pubDate')?.textContent || '';
-            const d = pub ? new Date(pub) : new Date();
-            contentEl.innerHTML = escapeHtml(title) + `\n\n<a href="${link}" target="_blank" rel="noopener">فتح المنشور على X ↗</a>`;
-            timeEl.textContent = fmt(d);
-            return;
-          }
-        }catch(e){ console.warn('XML src failed', u, e); }
-      }
-      contentEl.innerHTML = '<div class="err">تعذّر جلب آخر منشور. سيتم إعادة المحاولة تلقائيًا.</div>';
-      timeEl.textContent = '';
-    }
-
-    let t = REFRESH_SECONDS;
-    setInterval(()=>{ t = (t<=1)? REFRESH_SECONDS : t-1; countEl.textContent = t; },1000);
-    loadLatest();
-    setInterval(loadLatest, REFRESH_SECONDS*1000);
+    }, 50); // كل 50 مللي ثانية (غيّر لتعديل السرعة العامة: أصغر = أسرع)
   </script>
 </body>
 </html>
