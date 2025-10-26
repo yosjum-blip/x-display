@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>لوحة — أحدث منشور @SPAeconomic (بدون API)</title>
+  <style>
+    :root{ --fg:#fff; --muted:#cbd5e1; --accent:#7cc4ff }
+    *{box-sizing:border-box}
+    html,body{
+      height:100%; margin:0; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      background:#0a2a3a url('background.jpg') center/cover no-repeat fixed;
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      color:var(--fg);
+    }
+    .wrap{ width:92%; max-width:720px; background: rgba(0,0,0,.55);
+           backdrop-filter: blur(10px) brightness(.9);
+           border-radius: 20px; padding: 22px; }
+    h1{margin:0 0 12px; text-align:center; font-size: clamp(18px, 3vmax, 34px);}
+    .card{ background: rgba(0,0,0,.35); border-radius: 14px; padding: 18px; min-height: 40vh;
+           display:flex; align-items:center; justify-content:center; }
+    .text{ font-size: clamp(18px, 2.5vmax, 30px); line-height: 1.6; white-space: pre-wrap; text-align: start; }
+    .meta{ margin-top: 10px; display:flex; justify-content:space-between; flex-wrap:wrap; color: var(--muted); font-size: 14px;}
+    .err{ color:#ff8f8f; text-align:center; }
+    a{ color:var(--accent); text-decoration:none; }
+    .small{ font-size: 13px; opacity: .85; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>أحدث منشور من ‎@SPAeconomic</h1>
+    <div class="card">
+      <div id="content" class="text">يجري الجلب…</div>
+    </div>
+    <div class="meta">
+      <span id="time"></span>
+      <span class="small">تحديث تلقائي كل <span id="count">60</span> ثانية</span>
+    </div>
+  </div>
+
+  <script>
+    const USERNAME = "SPAeconomic";
+    const REFRESH_SECONDS = 60;
+    const contentEl = document.getElementById('content');
+    const timeEl = document.getElementById('time');
+    const countEl = document.getElementById('count');
+
+    const JSON_SOURCES = [
+      `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fnitter.net%2F${USERNAME}%2Frss`,
+      `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fnitter.fdn.fr%2F${USERNAME}%2Frss`,
+      `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fnitter.pufe.org%2F${USERNAME}%2Frss`
+    ];
+    const XML_FALLBACKS = [
+      `https://r.jina.ai/http://nitter.net/${USERNAME}/rss`,
+      `https://r.jina.ai/http://nitter.fdn.fr/${USERNAME}/rss`
+    ];
+
+    function escapeHtml(s){return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    const pad=n=>n<10?'0'+n:n;
+    const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+    async function fetchJson(url){
+      const res = await fetch(url, {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return res.json();
+    }
+    async function fetchText(url){
+      const res = await fetch(url, {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return res.text();
+    }
+
+    async function loadLatest(){
+      contentEl.textContent = "يجري الجلب…";
+      for (const u of JSON_SOURCES){
+        try{
+          const data = await fetchJson(u);
+          if(data && data.items && data.items.length){
+            const it = data.items[0];
+            const txt = it.title || it.description || '';
+            const link = it.link || it.guid || '';
+            const pub = it.pubDate ? new Date(it.pubDate) : new Date();
+            contentEl.innerHTML = escapeHtml(txt) + `\n\n<a href="${link}" target="_blank" rel="noopener">فتح المنشور على X ↗</a>`;
+            timeEl.textContent = fmt(pub);
+            return;
+          }
+        }catch(e){ console.warn('JSON src failed', u, e); }
+      }
+      for (const u of XML_FALLBACKS){
+        try{
+          const xml = await fetchText(u);
+          const doc = new DOMParser().parseFromString(xml,'text/xml');
+          const item = doc.querySelector('item');
+          if(item){
+            const title = item.querySelector('title')?.textContent || '';
+            const link = item.querySelector('link')?.textContent || '';
+            const pub  = item.querySelector('pubDate')?.textContent || '';
+            const d = pub ? new Date(pub) : new Date();
+            contentEl.innerHTML = escapeHtml(title) + `\n\n<a href="${link}" target="_blank" rel="noopener">فتح المنشور على X ↗</a>`;
+            timeEl.textContent = fmt(d);
+            return;
+          }
+        }catch(e){ console.warn('XML src failed', u, e); }
+      }
+      contentEl.innerHTML = '<div class="err">تعذّر جلب آخر منشور. سيتم إعادة المحاولة تلقائيًا.</div>';
+      timeEl.textContent = '';
+    }
+
+    let t = REFRESH_SECONDS;
+    setInterval(()=>{ t = (t<=1)? REFRESH_SECONDS : t-1; countEl.textContent = t; },1000);
+    loadLatest();
+    setInterval(loadLatest, REFRESH_SECONDS*1000);
+  </script>
+</body>
+</html>
